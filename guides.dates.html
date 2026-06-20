@@ -1,0 +1,75 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Dates and time zones</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Dates and time zones</h1>
+<h2>Brief</h2>
+<p>Pick a date frame with DateTimeMode so the server and the browser agree on the calendar.</p>
+<h2>Details</h2><p>JavaScript <code class="ctag">Date</code> objects carry a time zone; C# <code class="ctag">DateTime</code> values are ambiguous about
+one. To keep the two ends in agreement, the compiler emits every <i>calendar</i> construct in a
+frame you choose:
+<a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode</code></a>.</p>
+<p></p>
+<h2>Choosing the frame</h2><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Mode</p></td>
+    <td class="thdr" width="70%"><p>Emits</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode.Local</code></a> (default)</p></td>
+    <td class="tmain"><p>Local-time constructs - <code class="ctag">new Date(y, m, d, ...)</code> and
+<code class="ctag">getFullYear()</code> / <code class="ctag">getMonth()</code> / ...</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode.Utc</code></a></p></td>
+    <td class="tmain"><p>UTC constructs - <code class="ctag">new Date(Date.UTC(y, m, d, ...))</code> and
+<code class="ctag">getUTCFullYear()</code> / <code class="ctag">getUTCMonth()</code> / ...</p></td>
+  </tr>
+</table><p>Set the mode through the
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>DateMode</code></a> property or the
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>ExpressionCompiler(lambda, mode)</code></a>
+constructor. It must be set <b>before</b> you read
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>JavaScriptExpression</code></a>,
+because the result is computed once and cached.</p><div id="open26" style="display:none">
+  <p>Selecting UTC framing&nbsp;<a href="javascript: showdiv('close26'); hidediv('open26');" onclick="javascript: showdiv('close26'); hidediv('open26');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close26" style="display:inline">
+  <p>Selecting UTC framing&nbsp;<a href="javascript: showdiv('open26'); hidediv('close26');" onclick="javascript: showdiv('open26'); hidediv('close26');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example26"><code class="cs">var compiler = new ExpressionCompiler(rule, DateTimeMode.Utc);
+// or: compiler.DateMode = DateTimeMode.Utc;  (before reading JavaScriptExpression)
+string js = compiler.JavaScriptExpression;</code></pre>
+</div><p></p>
+<h2>The contract</h2><div class="note-warning"><p>Bind JS-side dates in the <b>same</b> frame you select here. A mismatch does not error - it
+silently shifts every calendar-component comparison by the client's UTC offset, so a rule
+can quietly pass or fail by up to a day.</p></div><p>The mode only governs constructs that read or build <i>calendar components</i>: date constants,
+the <code class="ctag">Year</code>/<code class="ctag">Month</code>/<code class="ctag">Day</code>/<code class="ctag">Hour</code>/... reads, and the calendar-based
+<a href="Gehtsoft.ExpressionToJs.Functions.html"><code>MonthsSince</code></a> /
+<a href="Gehtsoft.ExpressionToJs.Functions.html"><code>YearsSince</code></a> helpers (which receive a
+UTC flag).</p>
+<p></p>
+<h2>What is frame-independent</h2>
+<p>Operations that work on the absolute instant (the epoch millisecond) are the same in both
+frames, so you never have to think about the mode for them:</p><ul class="main">
+  <li><p>Adding or subtracting a <code class="ctag">TimeSpan</code>, and subtracting two dates.</p></li>
+  <li><p><code class="ctag">AddDays</code> / <code class="ctag">AddHours</code> / <code class="ctag">AddMinutes</code> / <code class="ctag">AddSeconds</code>.</p></li>
+  <li><p>The <code class="ctag">TimeSpan.Total*</code> properties and
+<a href="Gehtsoft.ExpressionToJs.Functions.html"><code>DaysSince</code></a>.</p></li>
+</ul><p></p>
+<h2>The clock stays live</h2>
+<p><code class="ctag">DateTime.Now</code>, <code class="ctag">DateTime.Today</code> and <code class="ctag">DateTime.UtcNow</code> are <i>not</i> folded into
+a compile-time constant. They emit live JavaScript - <code class="ctag">Now</code>/<code class="ctag">UtcNow</code> become
+<code class="ctag">new Date()</code>, and <code class="ctag">Today</code> becomes <code class="ctag">jsv_today(...)</code> (mode-aware midnight) - so the
+rule is evaluated against the clock when the user submits, exactly as the server would. Chains
+such as <code class="ctag">DateTime.Now.AddDays(30)</code> stay dynamic too.</p><div id="open27" style="display:none">
+  <p>An age rule, checked at validation time&nbsp;<a href="javascript: showdiv('close27'); hidediv('open27');" onclick="javascript: showdiv('close27'); hidediv('open27');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close27" style="display:inline">
+  <p>An age rule, checked at validation time&nbsp;<a href="javascript: showdiv('open27'); hidediv('close27');" onclick="javascript: showdiv('open27'); hidediv('close27');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example27"><code class="cs">// p =&gt; Functions.YearsSince(DateTime.Today, p.BirthDate) &gt;= 21
+// jsv_greaterorequal(jsv_yearssince(jsv_today(false), p.BirthDate, false), 21)</code></pre>
+</div><p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.supported-features.html">Supported expression features</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

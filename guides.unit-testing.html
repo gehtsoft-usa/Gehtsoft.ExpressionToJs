@@ -1,0 +1,97 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Unit-testing your expressions</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Unit-testing your expressions</h1>
+<h2>Brief</h2>
+<p>Prove the C# rule and its emitted JavaScript agree, by running both and comparing - the way this library tests itself.</p>
+<h2>Details</h2><p>A validation rule is a <b>boolean</b> - it answers valid or not. Parity means the C# delegate and
+the emitted JavaScript return the <b>same true/false</b> for the same input. That is what a
+differential test checks: run both, compare the verdicts. It matters because C# and JavaScript
+diverge in ways that can <i>flip</i> that verdict - integer division, banker's rounding, date
+framing, <code class="ctag">==</code> coercion, Unicode whitespace. The emitted <code class="ctag">jsv_*</code> helpers exist to keep
+the two ends agreeing; a test is how you confirm they do for <i>your</i> rule.</p>
+<p></p>
+<h2>The setup: an in-process JavaScript engine</h2>
+<p>You do not need a browser. Run the emitted JavaScript in-process with
+<a href="https://github.com/sebastienros/jint" target="_blank">Jint</a>, a JavaScript engine for .NET. The one
+rule that makes it work: load the runtime stub
+(<a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.html"><code>ExpressionToJsStubAccessor</code></a>)
+into the engine once, so the <code class="ctag">jsv_*</code> helpers the emitted code calls are defined.</p>
+<p>Because the result is always a boolean, the assertion is simple - no numeric coercion, just
+<code class="ctag">bool</code> against <code class="ctag">bool</code>:</p><div id="open38" style="display:none">
+  <p>A reusable differential assertion for a rule (xUnit)&nbsp;<a href="javascript: showdiv('close38'); hidediv('open38');" onclick="javascript: showdiv('close38'); hidediv('open38');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close38" style="display:inline">
+  <p>A reusable differential assertion for a rule (xUnit)&nbsp;<a href="javascript: showdiv('open38'); hidediv('close38');" onclick="javascript: showdiv('open38'); hidediv('close38');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example38"><code class="cs">using Jint;
+using Gehtsoft.ExpressionToJs;
+ 
+static void AssertRule&lt;T&gt;(Expression&lt;Func&lt;T, bool&gt;&gt; rule, T input)
+{
+    // 1. server side: compile and invoke the delegate
+    bool expected = rule.Compile()(input);
+ 
+    // 2. emit the JavaScript
+    string js = new ExpressionCompiler(rule).JavaScriptExpression;
+ 
+    // 3. run it in Jint with the stub loaded and the parameter bound
+    var engine = new Engine();
+    engine.Execute(ExpressionToJsStubAccessor.GetJsIncludesAsString());
+    engine.SetValue(rule.Parameters[0].Name, input);
+    bool actual = engine.Evaluate(js).AsBoolean();
+ 
+    // 4. same verdict on both tiers?
+    Assert.Equal(expected, actual);
+}</code></pre>
+</div><div id="open39" style="display:none">
+  <p>Using it on validation rules&nbsp;<a href="javascript: showdiv('close39'); hidediv('open39');" onclick="javascript: showdiv('close39'); hidediv('open39');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close39" style="display:inline">
+  <p>Using it on validation rules&nbsp;<a href="javascript: showdiv('open39'); hidediv('close39');" onclick="javascript: showdiv('open39'); hidediv('close39');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example39"><code class="cs">// a range check, at the boundary
+AssertRule&lt;int&gt;(age =&gt; age &gt;= 18 &amp;&amp; age &lt;= 120, 18);
+ 
+// &quot;required&quot; - tabs and other whitespace must fail, as in C#
+AssertRule&lt;string&gt;(s =&gt; !string.IsNullOrWhiteSpace(s), &quot;\t&quot;);
+ 
+// integer division: C# says 11 / 2 == 5; the stub keeps JS agreeing
+AssertRule&lt;int&gt;(n =&gt; n / 2 == 5, 11);</code></pre>
+</div><p></p>
+<h2>Binding the input</h2>
+<p>The verdict comparison is trivial; the care is in <b>binding the input</b> the same way the
+browser will:</p><ul class="main">
+  <li><p><b>Dates</b> must be bound in the same frame as the compiler's
+<a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode</code></a> - bind a UTC date for a
+<code class="ctag">Utc</code> rule, a local one for a <code class="ctag">Local</code> rule. A frame mismatch in the test is the
+same bug it would be in production; see <a href="guides.dates.html">Dates and time zones</a>.</p></li>
+  <li><p><b>Model rules</b> need the parameter bound as an object Jint can read
+(<code class="ctag">SetValue(&quot;p&quot;, model)</code>). If you compiled the rule for the
+<a href="guides.model-rules.html">form binding</a> (<code class="ctag">reference()</code>), define a
+<code class="ctag">reference</code> function in the engine too, so the emitted lookups resolve.</p></li>
+</ul><p></p>
+<h2>What to test</h2>
+<p>Sampling round numbers hides exactly the bugs differential testing exists to catch. Aim your
+inputs at the places C# and JavaScript disagree:</p><ul class="main">
+  <li><p>Integer division and modulo with operands that do not divide evenly (<code class="ctag">11 / 2</code>).</p></li>
+  <li><p><code class="ctag">Math.Round</code> on midpoints (<code class="ctag">0.5</code>, <code class="ctag">2.5</code>) - banker's rounding.</p></li>
+  <li><p>Equality across types and the float-tolerance case (<code class="ctag">0.1 + 0.2 == 0.3</code>).</p></li>
+  <li><p><code class="ctag">null</code> / empty inputs - strings, collections, nullable values.</p></li>
+  <li><p>Dates near midnight and across month/year boundaries, in the
+<a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode</code></a> you ship.</p></li>
+</ul><p></p>
+<h2>How this library tests itself</h2>
+<p>The same pattern guards the library. Its <code class="ctag">Complete/</code> differential suite checks each case
+three ways - the compiled C# delegate, the emitted JavaScript in Jint, and the two against each
+other - and that comparison is what keeps every server-side
+<a href="Gehtsoft.ExpressionToJs.Functions.html"><code>Functions</code></a> helper in lock-step with its
+<code class="ctag">jsv_*</code> twin in the stub. Pointing the same harness at <i>your</i> rules is the
+surest way to know your client and server agree.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.validation-walkthrough.html">Validating on all tiers from one source of truth</a></p></li>
+  <li><p><a href="guides.supported-features.html">Supported expression features</a></p></li>
+  <li><p><a href="guides.dates.html">Dates and time zones</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

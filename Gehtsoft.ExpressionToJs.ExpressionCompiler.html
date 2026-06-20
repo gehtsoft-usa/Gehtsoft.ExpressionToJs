@@ -1,0 +1,194 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>ExpressionCompiler</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>class <b>ExpressionCompiler</b></code></h1>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parents</b></td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>object</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>IEquatable&lt;<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html">Gehtsoft.ExpressionToJs.ExpressionCompiler</a>&gt;</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain" width="30" style="border-right: none;"></td>
+    <td class="tmain" style="border-left: none;">
+      <p><code>IEquatable&lt;Expression&gt;</code></p>
+    </td>
+  </tr>
+</table>
+<h2>Brief</h2>
+<p>Converts a C# lambda expression into an equivalent JavaScript expression string.</p>
+<h2>Details</h2><p>This is the entry point of the library. Construct it around a lambda - typically a boolean
+form-validation predicate - and read
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.JavaScriptExpression.B2E.html"><code>ExpressionCompiler.JavaScriptExpression</code></a>             to get JavaScript
+that computes the same result in the browser. The point is to keep one source of truth: the
+lambda runs server-side as a compiled delegate, and its emitted twin runs client-side, so a
+rule cannot drift between the two ends.</p>
+<p>Configure framing and translation <i>before</i> reading the expression: set
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.DateMode.Ht5.html"><code>ExpressionCompiler.DateMode</code></a>             for date semantics, and register custom translations through
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Methods.p1B.html"><code>ExpressionCompiler.Methods</code></a>            , <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Constants.PQA.html"><code>ExpressionCompiler.Constants</code></a>            , and <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Members.qX6.html"><code>ExpressionCompiler.Members</code></a>            . For deeper control -
+notably how a parameter renders on the client - derive a subclass and override the
+<code class="ctag">protected virtual</code> emit methods. Whatever the emitted code calls (the <code class="ctag">jsv_*</code>
+helpers) must be present at evaluation time; see
+<a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.GetJsIncludesAsString.8V5.html"><code>ExpressionToJsStubAccessor.GetJsIncludesAsString</code></a>            .</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Static Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.AddConstant.8f.html">AddConstant</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Renders a single value as the JavaScript literal the compiler would emit for it.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.EscapeJsRegex.3V7.html">EscapeJsRegex</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Prepares a regular-expression pattern for use inside a JavaScript regex literal.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.EscapeJsString.bQF.html">EscapeJsString</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Turns a CLR string into a safe, quoted JavaScript string literal.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.FormatDateLiteral.sF2.html">FormatDateLiteral</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Renders a fixed date as the JavaScript Date literal the compiler would emit for it.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.ParameterAccessPath.HK7.html">ParameterAccessPath</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Builds the dotted member path of a parameter access, for use inside a custom parameter</p>
+    </td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Properties</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Constants.PQA.html">Constants</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Registry for mapping constant types the built-ins don't cover to JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.DateMode.Ht5.html">DateMode</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>How DateTime values are framed in the emitted JavaScript - local time or UTC.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.JavaScriptExpression.B2E.html">JavaScriptExpression</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The emitted JavaScript - the whole reason to use this type.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Members.qX6.html">Members</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Registry for mapping property reads the built-ins don't cover to JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Methods.p1B.html">Methods</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Registry for mapping method calls the built-ins don't cover to JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Parameters.8LE.html">Parameters</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Registry for binding a parameter type to a host-side lookup instead of emitting it verbatim.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.ReturnType.OCF.html">ReturnType</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The CLR type the lambda produces.</p>
+    </td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Constructors</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler..ctor.9KG.html">ExpressionCompiler</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Creates a compiler for the given lambda using local-time date framing.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler..ctor.IIG.html">ExpressionCompiler</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Creates a compiler for the given lambda with an explicit date framing.</p>
+    </td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Equals.UY3.html">Equals</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Tells whether two compilers were built from the same lambda.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.Equals.FqA.html">Equals</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Tells whether this compiler was built from the given lambda.</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="Gehtsoft.ExpressionToJs.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

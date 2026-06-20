@@ -1,0 +1,206 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Validating against a model object</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Validating against a model object</h1>
+<h2>Brief</h2>
+<p>Write rules that span several fields of a model, bound to the form on the page.</p>
+<h2>Details</h2><p>Most field checks need only that one field's value - a length, a digit, a postal-code format -
+and a single-value rule (the kind in the <a href="guides.validation-walkthrough.html">walkthrough</a>)
+handles them. A <b>model</b> rule earns its place when a check has to see <b>more than one field
+at once</b>.</p>
+<p>The classic example is a change-password form. Every rule is single-field - minimum length,
+contains a digit, and so on - except one: the new password and its confirmation must
+<i>match</i>. That check cannot be expressed against a single value; it has to read both fields,
+so it is written against the whole model.</p><div id="open12" style="display:none">
+  <p>A rule that spans two fields&nbsp;<a href="javascript: showdiv('close12'); hidediv('open12');" onclick="javascript: showdiv('close12'); hidediv('open12');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close12" style="display:inline">
+  <p>A rule that spans two fields&nbsp;<a href="javascript: showdiv('open12'); hidediv('close12');" onclick="javascript: showdiv('open12'); hidediv('close12');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example12"><code class="cs">// the new password and its confirmation must be equal
+Expression&lt;Func&lt;Account, bool&gt;&gt; rule = m =&gt; m.Password == m.Confirm;</code></pre>
+</div><p></p>
+<h2>The problem: where will JavaScript get the object and its properties from?</h2>
+<p>By default the compiler emits each member access <i>verbatim</i>: the rule above would become
+<code class="ctag">jsv_equal(m.Password, m.Confirm)</code>. That only works if the browser already has a JavaScript
+object <code class="ctag">m</code> shaped exactly like the server model. On a form you do not - the values live in
+input fields, not in a mirror of your C# model.</p>
+<p>What you want instead is for each access to resolve against the <b>form</b>: read
+<code class="ctag">Password</code> and <code class="ctag">Confirm</code> from the page.</p>
+<p></p>
+<h2>The binding: reference()</h2>
+<p>The convention the library implements for you is a single host-provided JavaScript function,
+<code class="ctag">reference()</code>: by default a model access resolves to a <code class="ctag">reference(...)</code> call that reads
+the matching value from the page.</p><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Hook</p></td>
+    <td class="thdr" width="70%"><p>Provided by the page</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">reference('Path.To.Field')</code></p></td>
+    <td class="tmain"><p>Returns the current value of a model field, given its path. Your page implements it
+to read the matching input (or a data model bound to the form).</p></td>
+  </tr>
+</table><p>With that binding the password-match rule emits against the form instead of a server-shaped
+object:</p><div id="open13" style="display:none">
+  <p>The emitted rule&nbsp;<a href="javascript: showdiv('close13'); hidediv('open13');" onclick="javascript: showdiv('close13'); hidediv('open13');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close13" style="display:inline">
+  <p>The emitted rule&nbsp;<a href="javascript: showdiv('open13'); hidediv('close13');" onclick="javascript: showdiv('open13'); hidediv('close13');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example13"><code class="cs">// rule:   m =&gt; m.Password == m.Confirm
+// emits:  jsv_equal(reference('Password'), reference('Confirm'))</code></pre>
+</div><p>A field reached through a longer chain becomes a dotted path the same way -
+<code class="ctag">m.Address.PostalCode</code> becomes <code class="ctag">reference('Address.PostalCode')</code>.</p>
+<p></p>
+<h2>Map the model to the form, once for the whole application</h2>
+<p>You are not binding a particular model - you are declaring, once for the whole application,
+<b>how any rule's model maps onto the client-side source</b> (the form). The convention is the
+<code class="ctag">reference()</code> hook: a model field resolves to the matching value on the page.</p>
+<p>This is <b>off by default</b>: out of the box the compiler emits member access verbatim. You turn
+the <code class="ctag">reference()</code> convention on with
+<a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html"><code>Parameters.MapReference</code></a>, whose
+built-in rendering makes the bare parameter <code class="ctag">reference()</code>, a member chain
+<code class="ctag">reference('Path.To.Field')</code>, and array indexing <code class="ctag">jsv_index(...)</code> - so <code class="ctag">m.Password</code>,
+in any rule over any model, becomes <code class="ctag">reference('Password')</code>.</p>
+<p><code class="ctag">MapReference</code> takes a <code class="ctag">Func&lt;Type, bool&gt;</code> that picks which parameters it applies to;
+passing <code class="ctag">_ =&gt; true</code> enables it for <b>every parameter, of any type, in any rule</b>. (You
+could filter by type, but a validation rule's one parameter is always the model, so there is
+nothing to filter.) It only ever touches the rule's own parameter, so a parameter introduced by a
+nested LINQ lambda (<code class="ctag">r =&gt; r.Length &gt; 0</code>) keeps its own name.</p>
+<p>Because it is one unified convention, enable it <b>once</b> in a small application-level factory
+and run every rule through it - no rule repeats the setup:</p><div id="open14" style="display:none">
+  <p>Compile every rule through one factory&nbsp;<a href="javascript: showdiv('close14'); hidediv('open14');" onclick="javascript: showdiv('close14'); hidediv('open14');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close14" style="display:inline">
+  <p>Compile every rule through one factory&nbsp;<a href="javascript: showdiv('open14'); hidediv('close14');" onclick="javascript: showdiv('open14'); hidediv('close14');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example14"><code class="cs">static string CompileRule(LambdaExpression rule)
+{
+    var compiler = new ExpressionCompiler(rule);
+    compiler.Parameters.MapReference(_ =&gt; true);   // turn the reference() convention on for all
+    return compiler.JavaScriptExpression;
+}
+ 
+// m =&gt; m.Password == m.Confirm
+//   -&gt; jsv_equal(reference('Password'), reference('Confirm'))</code></pre>
+</div><p></p>
+<h2>The host side</h2>
+<p>The page provides the hook the emitted code calls: <code class="ctag">reference(path)</code>, which walks the form
+by a dotted path and returns a field's current value. Write <code class="ctag">reference</code> once for your app,
+alongside the <a href="guides.validation-walkthrough.html">runtime stub</a>.</p>
+<p>Serve each rule wrapped as a function, compiled through the factory above. Because the rule reads
+its inputs through <code class="ctag">reference()</code>, the function takes no arguments:</p><div id="open15" style="display:none">
+  <p>Serving a compiled rule&nbsp;<a href="javascript: showdiv('close15'); hidediv('open15');" onclick="javascript: showdiv('close15'); hidediv('open15');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close15" style="display:inline">
+  <p>Serving a compiled rule&nbsp;<a href="javascript: showdiv('open15'); hidediv('close15');" onclick="javascript: showdiv('open15'); hidediv('close15');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example15"><code class="cs">// GET /js/rules/{name} -&gt; defines a function {name}() that calls reference()
+app.MapGet(&quot;/js/rules/{name}&quot;, (string name) =&gt;
+{
+    string expr = CompileRule(Rules.For(name));
+    string script = $&quot;function {name}() {{ return {expr}; }}&quot;;
+    return Results.Text(script, &quot;application/javascript&quot;);
+});</code></pre>
+</div><p>On the page, implement <code class="ctag">reference</code> against your form and call the rule:</p><div id="open16" style="display:none">
+  <p>Host page - reference() and running the rule&nbsp;<a href="javascript: showdiv('close16'); hidediv('open16');" onclick="javascript: showdiv('close16'); hidediv('open16');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close16" style="display:inline">
+  <p>Host page - reference() and running the rule&nbsp;<a href="javascript: showdiv('open16'); hidediv('close16');" onclick="javascript: showdiv('open16'); hidediv('close16');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example16"><code class="html">&lt;form name=&quot;account&quot;&gt;
+    &lt;input name=&quot;Password&quot; type=&quot;password&quot;&gt;
+    &lt;input name=&quot;Confirm&quot;  type=&quot;password&quot;&gt;
+&lt;/form&gt;
+ 
+&lt;!-- jsv_* runtime, then the rule (defines passwordsMatch()) --&gt;
+&lt;script src=&quot;/js/expr-stub.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/js/rules/passwordsMatch&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+    // written once for the app: resolve a model path against the form
+    function reference(path) {
+        return document.forms[&quot;account&quot;].elements[path].value;
+    }
+ 
+    document.forms[&quot;account&quot;].addEventListener(&quot;submit&quot;, function (e) {
+        if (!passwordsMatch()) {
+            e.preventDefault();
+            showError(&quot;Passwords do not match.&quot;);
+        }
+    });
+&lt;/script&gt;</code></pre>
+</div><p></p>
+<h2>Referring to the model another way</h2>
+<p><code class="ctag">MapReference</code> emits <code class="ctag">reference('path')</code>, which is all most pages need. When it isn't
+enough, <a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html"><code>Map</code></a> lets you emit anything -
+and it takes <b>two</b> functions, because a rule can use the model in two shapes:</p><ul class="main">
+  <li><p>the <b>whole model</b> (the bare parameter) - for example when you pass it to a custom
+whole-entity check; and</p></li>
+  <li><p>a <b>single field</b> (a member chain rooted in the parameter), such as <code class="ctag">m.Password</code>.</p></li>
+</ul><p>A custom whole-entity function shows both at once - register the function (server + client), then
+a rule that uses the model whole <i>and</i> by field:</p><div id="open17" style="display:none">
+  <p>The two shapes&nbsp;<a href="javascript: showdiv('close17'); hidediv('open17');" onclick="javascript: showdiv('close17'); hidediv('open17');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close17" style="display:inline">
+  <p>The two shapes&nbsp;<a href="javascript: showdiv('open17'); hidediv('close17');" onclick="javascript: showdiv('open17'); hidediv('close17');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example17"><code class="cs">compiler.Methods.MapMethod(typeof(AccountRules), nameof(AccountRules.IsStrong),
+                           &quot;jsv_account_strong($0)&quot;);
+compiler.Parameters.MapReference(_ =&gt; true);
+ 
+Expression&lt;Func&lt;Account, bool&gt;&gt; rule =
+    m =&gt; AccountRules.IsStrong(m) &amp;&amp; m.Password == m.Confirm;
+ 
+// ((jsv_account_strong(reference())) &amp;&amp; (jsv_equal(reference('Password'), reference('Confirm'))))
+//                      ^ whole model                  ^ a field</code></pre>
+</div><p>The first <code class="ctag">Map</code> function renders the bare parameter (the whole model); the second renders a
+member or index chain rooted in it. <code class="ctag">MapReference</code> simply fills both in for you
+(<code class="ctag">reference()</code> and <code class="ctag">reference('path')</code>).</p>
+<p></p>
+<h3>More than one form on the page</h3>
+<p>With several forms on one page, <code class="ctag">reference('Password')</code> is ambiguous. Pass the model's type
+as the form name so the page knows which form to read. The type is on the
+<code class="ctag">ParameterExpression</code>, and
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>ParameterAccessPath</code></a> turns the chain
+into the dotted path:</p><div id="open18" style="display:none">
+  <p>A type-qualified reference&nbsp;<a href="javascript: showdiv('close18'); hidediv('open18');" onclick="javascript: showdiv('close18'); hidediv('open18');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close18" style="display:inline">
+  <p>A type-qualified reference&nbsp;<a href="javascript: showdiv('open18'); hidediv('close18');" onclick="javascript: showdiv('open18'); hidediv('close18');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example18"><code class="cs">compiler.Parameters.Map(
+    _ =&gt; true,
+    p =&gt; $&quot;reference('{p.Type.Name}')&quot;,
+    (e, p) =&gt; $&quot;reference('{p.Type.Name}', '{ExpressionCompiler.ParameterAccessPath(e)}')&quot;);
+ 
+// m =&gt; m.Password == m.Confirm
+//   -&gt; jsv_equal(reference('Account', 'Password'), reference('Account', 'Confirm'))</code></pre>
+</div><p>On the page, the matching <code class="ctag">reference</code> reads the named form:</p><div id="open19" style="display:none">
+  <p>The host-side reference(type, path)&nbsp;<a href="javascript: showdiv('close19'); hidediv('open19');" onclick="javascript: showdiv('close19'); hidediv('open19');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close19" style="display:inline">
+  <p>The host-side reference(type, path)&nbsp;<a href="javascript: showdiv('open19'); hidediv('close19');" onclick="javascript: showdiv('open19'); hidediv('close19');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example19"><code class="js">function reference(type, path) {
+    return document.forms[type].elements[path].value;
+}</code></pre>
+</div><p></p>
+<h3>An object instead of a lookup function</h3>
+<p>To skip the lookup function, refer to the model as an object the page exposes: the whole model is
+<code class="ctag">value</code> and a field is <code class="ctag">value.Password</code>. Nothing is replaced by the bare word
+<code class="ctag">value</code> - it <i>is</i> the object the fields hang off:</p><div id="open20" style="display:none">
+  <p>Object access&nbsp;<a href="javascript: showdiv('close20'); hidediv('open20');" onclick="javascript: showdiv('close20'); hidediv('open20');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close20" style="display:inline">
+  <p>Object access&nbsp;<a href="javascript: showdiv('open20'); hidediv('close20');" onclick="javascript: showdiv('open20'); hidediv('close20');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example20"><code class="cs">compiler.Parameters.Map(
+    _ =&gt; true,
+    p =&gt; &quot;value&quot;,
+    (e, p) =&gt; &quot;value.&quot; + ExpressionCompiler.ParameterAccessPath(e));
+ 
+// m =&gt; m.Password == m.Confirm
+//   -&gt; jsv_equal(value.Password, value.Confirm)</code></pre>
+</div><p>Whatever you emit, the only contract is that the <a href="guides.client-frameworks.html">page
+provides</a> whatever the emitted code references.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.validation-walkthrough.html">Validating on all tiers from one source of truth</a></p></li>
+  <li><p><a href="guides.client-frameworks.html">Wiring into client frameworks</a></p></li>
+  <li><p><a href="guides.extending.html">Extending the translator for your own types</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

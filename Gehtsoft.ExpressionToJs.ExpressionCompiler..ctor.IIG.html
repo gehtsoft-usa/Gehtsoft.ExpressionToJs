@@ -1,0 +1,43 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>ExpressionCompiler.ExpressionCompiler</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>public constructor <b>ExpressionCompiler.ExpressionCompiler</b></code></h1><h2>Brief</h2>
+<p>Creates a compiler for the given lambda with an explicit date framing.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>ExpressionCompiler</b> (LambdaExpression lambdaExpression, <a href="Gehtsoft.ExpressionToJs.DateTimeMode.html">Gehtsoft.ExpressionToJs.DateTimeMode</a> dateMode) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>lambdaExpression</code></td>
+    <td class="tmain" width="69%"><p>The expression to translate. Its parameters become the free variables of the emitted
+JavaScript; its body is what gets translated.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>dateMode</code></td>
+    <td class="tmain" width="69%"><p>Sets <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.DateMode.Ht5.html"><code>ExpressionCompiler.DateMode</code></a>            . Choose the frame the host will bind JS-side dates in:
+<a href="Gehtsoft.ExpressionToJs.DateTimeMode.Local.vt1.html"><code>DateTimeMode.Local</code></a>             emits local-time constructs,
+<a href="Gehtsoft.ExpressionToJs.DateTimeMode.Utc.yo6.html"><code>DateTimeMode.Utc</code></a>             emits UTC ones. A mismatch silently shifts every
+calendar-component comparison by the client's offset.</p></td>
+  </tr>
+</table><h2>Details</h2><p>Use this when you already know whether the client binds dates in local time or UTC and
+want to fix it at construction.</p><p>Declared in <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html">ExpressionCompiler</a></p>
+<p>
+  <center><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('Gehtsoft.ExpressionToJs.ExpressionCompiler');</script></body></html>

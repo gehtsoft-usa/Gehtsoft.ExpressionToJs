@@ -1,0 +1,87 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>IExpressionEmitContext</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>interface <b>IExpressionEmitContext</b></code></h1>
+<h2>Brief</h2>
+<p>The building blocks a method-call translator needs to emit JavaScript.</p>
+<h2>Details</h2><p>Implemented by
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>ExpressionCompiler</code></a>            ; delegates to its (overridable) walk/escape
+helpers so custom translators compose with subclass customizations such as parameter
+rendering.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Properties</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.DateMode.lN.html">DateMode</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The configured DateTime framing (Local or Utc).</p>
+    </td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.Emit.LbG.html">Emit</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Emit the JavaScript for a sub-expression (walks the tree).</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.EmitParameterAccess.s13.html">EmitParameterAccess</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Emit access to a parameter-rooted member/indexer chain.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.EmitPredicate.OR7.html">EmitPredicate</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Emit a lambda as a JavaScript function-expression predicate (function (...) { return ...; }).</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.EscapeRegex.05A.html">EscapeRegex</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Escape a regex pattern for use inside a JavaScript /.../ literal.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.EscapeString.ex6.html">EscapeString</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Render a CLR string as a JavaScript string literal.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.RootsInParameter.tPG.html">RootsInParameter</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>True if the expression is (or roots in) one of the lambda's parameters.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.TryEvaluate.sg3.html">TryEvaluate</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Try to fold a (parameter-free) sub-expression to a constant value.</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="Gehtsoft.ExpressionToJs.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

@@ -1,0 +1,144 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Namespace Gehtsoft.ExpressionToJs</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Namespace Gehtsoft.ExpressionToJs</h1>
+<h2>Brief</h2>
+<p>The common namespace for all of the library's classes.</p>
+<h2>Details</h2><p><b>Entry points</b></p><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Type</p></td>
+    <td class="thdr" width="70%"><p>Purpose</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>ExpressionCompiler</code></a></p></td>
+    <td class="tmain"><p>The entry point. Wrap a lambda, optionally configure it, then read
+<code class="ctag">JavaScriptExpression</code> to get the emitted code.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.html"><code>ExpressionToJsStubAccessor</code></a></p></td>
+    <td class="tmain"><p>Hands you the JavaScript runtime (<code class="ctag">stub.js</code>) that the emitted code calls into.
+Load it into the page once.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.Functions.html"><code>Functions</code></a></p></td>
+    <td class="tmain"><p>Validation helpers (age math, Luhn check, lenient coercions, null tests) safe to
+call inside a rule, because each one has a matching JavaScript implementation.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode</code></a></p></td>
+    <td class="tmain"><p>Selects how dates are framed in the emitted code so both ends agree on the calendar.</p></td>
+  </tr>
+</table><p><b>Extending</b></p>
+<p>The compiler can be taught to translate methods, properties and constants on types the
+built-ins do not cover. For when and how, see
+<a href="guides.extending.html">Extending the translator for your own types</a>.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Classes</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html">ExpressionCompiler</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Converts a C# lambda expression into an equivalent JavaScript expression string.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.html">ExpressionToJsStubAccessor</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Gives you the JavaScript runtime that every compiled expression depends on.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.Functions.html">Functions</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Validation helpers you call from inside the lambdas you compile to JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IConstantTranslator.html">IConstantTranslator</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Translates a constant value into a JavaScript literal.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.html">IExpressionEmitContext</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>The building blocks a method-call translator needs to emit JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsConstantRegistry.html">IJsConstantRegistry</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Additive registry for custom constant types (Guid, enums, value structs, ...).</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsMemberRegistry.html">IJsMemberRegistry</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Additive registry for custom member/property access.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsMethodRegistry.html">IJsMethodRegistry</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Additive extension surface for mapping method calls to JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html">IJsParameterRegistry</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Registry for binding a parameter type to a host-side lookup instead of emitting it verbatim.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IMemberTranslator.html">IMemberTranslator</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Translates a member/property access into JavaScript.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.IMethodCallTranslator.html">IMethodCallTranslator</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Translates a specific family of method calls into JavaScript.</p>
+    </td>
+  </tr>
+</table>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Enumerations</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%">
+      <p><a href="Gehtsoft.ExpressionToJs.DateTimeMode.html">DateTimeMode</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>How DateTime values are framed in the emitted JavaScript.</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

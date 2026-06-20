@@ -1,0 +1,187 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Extending the translator for your own types</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="res/mermaid.min.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><script>mermaid.initialize({startOnLoad:true});</script><h1>Extending the translator for your own types</h1>
+<h2>Brief</h2>
+<p>Map a domain method, constant type or property the built-ins do not cover, without subclassing.</p>
+<h2>Details</h2><p>Real models reference types the built-ins don't know: a domain helper, a value struct, a
+<code class="ctag">Guid</code>. When a rule uses one, the compiler <b>throws at compile time</b> rather than guess -
+so a gap surfaces on the server, not as wrong JavaScript in the browser. You close the gap by
+teaching the compiler the mapping, through one of three registries on the compiler instance.</p><div id="open28" style="display:none">
+  <p>The extension model&nbsp;<a href="javascript: showdiv('close28'); hidediv('open28');" onclick="javascript: showdiv('close28'); hidediv('open28');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close28" style="display:inline">
+  <p>The extension model&nbsp;<a href="javascript: showdiv('open28'); hidediv('close28');" onclick="javascript: showdiv('open28'); hidediv('close28');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <div class="mermaid">classDiagram
+ExpressionCompiler --&gt; IJsMethodRegistry : Methods
+ExpressionCompiler --&gt; IJsConstantRegistry : Constants
+ExpressionCompiler --&gt; IJsMemberRegistry : Members
+IJsMethodRegistry ..&gt; IMethodCallTranslator
+IJsConstantRegistry ..&gt; IConstantTranslator
+IJsMemberRegistry ..&gt; IMemberTranslator
+IMethodCallTranslator ..&gt; IExpressionEmitContext
+IConstantTranslator ..&gt; IExpressionEmitContext
+IMemberTranslator ..&gt; IExpressionEmitContext</div>
+</div><p>Register <b>before</b> reading
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>JavaScriptExpression</code></a>; registrations are
+consulted ahead of the built-ins, so they can also deliberately <i>shadow</i> a default. The
+three scenarios below use one order-form model:</p><div id="open29" style="display:none">
+  <p>The model the examples extend&nbsp;<a href="javascript: showdiv('close29'); hidediv('open29');" onclick="javascript: showdiv('close29'); hidediv('open29');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close29" style="display:inline">
+  <p>The model the examples extend&nbsp;<a href="javascript: showdiv('open29'); hidediv('close29');" onclick="javascript: showdiv('open29'); hidediv('close29');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example29"><code class="cs">class Order
+{
+    public string      CouponCode { get; set; }
+    public DateTime    PlacedOn   { get; set; }
+    public OrderStatus Status     { get; set; }   // enum { Pending, Shipped, Delivered }
+}</code></pre>
+</div><p>Only constructs that read a parameter (<code class="ctag">o.something</code>) reach the client; a subtree with no
+parameter is computed on the server and emitted as a literal. So these scenarios are all about
+<b>a model value the browser has to work with</b>.</p>
+<p></p>
+<h2>Add a method for a type</h2>
+<p><b>When:</b> your rule calls a domain helper on a model value - a server-side check with no
+JavaScript twin, such as <code class="ctag">Coupon.IsValid(o.CouponCode)</code>:</p><div id="open30" style="display:none">
+  <p>The C# helper (server side)&nbsp;<a href="javascript: showdiv('close30'); hidediv('open30');" onclick="javascript: showdiv('close30'); hidediv('open30');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close30" style="display:inline">
+  <p>The C# helper (server side)&nbsp;<a href="javascript: showdiv('open30'); hidediv('close30');" onclick="javascript: showdiv('open30'); hidediv('close30');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example30"><code class="cs">public static class Coupon
+{
+    public static bool IsValid(string code) =&gt;
+        code != null &amp;&amp; Regex.IsMatch(code, &quot;^[A-Z]{4}-\\d{4}$&quot;);
+}</code></pre>
+</div><p>Map it to a JavaScript function with
+<a href="Gehtsoft.ExpressionToJs.IJsMethodRegistry.html"><code>MapMethod</code></a>; in the template, <code class="ctag">$0</code>,
+<code class="ctag">$1</code>, ... are the call's arguments (and <code class="ctag">$obj</code> the instance, for an instance method):</p><div id="open31" style="display:none">
+  <p>Map the call to a JS function&nbsp;<a href="javascript: showdiv('close31'); hidediv('open31');" onclick="javascript: showdiv('close31'); hidediv('open31');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close31" style="display:inline">
+  <p>Map the call to a JS function&nbsp;<a href="javascript: showdiv('open31'); hidediv('close31');" onclick="javascript: showdiv('open31'); hidediv('close31');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example31"><code class="cs">var compiler = new ExpressionCompiler(rule);
+compiler.Methods.MapMethod(typeof(Coupon), nameof(Coupon.IsValid), &quot;jsv_coupon_ok($0)&quot;);
+ 
+// o =&gt; Coupon.IsValid(o.CouponCode)
+//   -&gt; jsv_coupon_ok(o.CouponCode)</code></pre>
+</div><p><b>The JavaScript side:</b> the emitted code calls <code class="ctag">jsv_coupon_ok</code>, so define it on the page -
+the same check in JavaScript, next to the <a href="guides.validation-walkthrough.html">runtime stub</a>:</p><div id="open32" style="display:none">
+  <p>Ship the matching function&nbsp;<a href="javascript: showdiv('close32'); hidediv('open32');" onclick="javascript: showdiv('close32'); hidediv('open32');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close32" style="display:inline">
+  <p>Ship the matching function&nbsp;<a href="javascript: showdiv('open32'); hidediv('close32');" onclick="javascript: showdiv('open32'); hidediv('close32');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example32"><code class="js">function jsv_coupon_ok(code) {
+    return code != null &amp;&amp; /^[A-Z]{4}-\d{4}$/.test(code);
+}</code></pre>
+</div><p></p>
+<h2>Add a property read for a type</h2>
+<p><b>When:</b> a rule reads a property the built-ins don't translate, so the value must be computed
+on the client. <code class="ctag">DateTime.DayOfYear</code> is a good example: a JavaScript <code class="ctag">Date</code> has no such
+property, yet by default the compiler emits the access verbatim - silently wrong:</p><div id="open33" style="display:none">
+  <p>The default - verbatim, and wrong for a JS Date&nbsp;<a href="javascript: showdiv('close33'); hidediv('open33');" onclick="javascript: showdiv('close33'); hidediv('open33');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close33" style="display:inline">
+  <p>The default - verbatim, and wrong for a JS Date&nbsp;<a href="javascript: showdiv('open33'); hidediv('close33');" onclick="javascript: showdiv('open33'); hidediv('close33');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example33"><code class="cs">// o =&gt; o.PlacedOn.DayOfYear &lt;= 31
+//   -&gt; jsv_lessorequal(o.PlacedOn.DayOfYear, 31)   // a JS Date has no .DayOfYear</code></pre>
+</div><p>Map the property to a real client computation with
+<a href="Gehtsoft.ExpressionToJs.IJsMemberRegistry.html"><code>MapMember</code></a>; <code class="ctag">$obj</code> is the emitted
+target the property is read from:</p><div id="open34" style="display:none">
+  <p>Map the property to a helper&nbsp;<a href="javascript: showdiv('close34'); hidediv('open34');" onclick="javascript: showdiv('close34'); hidediv('open34');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close34" style="display:inline">
+  <p>Map the property to a helper&nbsp;<a href="javascript: showdiv('open34'); hidediv('close34');" onclick="javascript: showdiv('open34'); hidediv('close34');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example34"><code class="cs">compiler.Members.MapMember(typeof(DateTime), nameof(DateTime.DayOfYear), &quot;jsv_dayofyear($obj)&quot;);
+ 
+// o =&gt; o.PlacedOn.DayOfYear &lt;= 31
+//   -&gt; jsv_lessorequal(jsv_dayofyear(o.PlacedOn), 31)</code></pre>
+</div><p><b>The JavaScript side:</b> ship the <code class="ctag">jsv_dayofyear</code> helper that computes it from a <code class="ctag">Date</code>:</p><div id="open35" style="display:none">
+  <p>Ship the matching function&nbsp;<a href="javascript: showdiv('close35'); hidediv('open35');" onclick="javascript: showdiv('close35'); hidediv('open35');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close35" style="display:inline">
+  <p>Ship the matching function&nbsp;<a href="javascript: showdiv('open35'); hidediv('close35');" onclick="javascript: showdiv('open35'); hidediv('close35');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example35"><code class="js">function jsv_dayofyear(d) {
+    var start = new Date(d.getFullYear(), 0, 0);
+    return Math.floor((d - start) / 86400000);
+}</code></pre>
+</div><p></p>
+<h2>Map an enum to the client</h2>
+<p><b>When:</b> the client carries an enum by <i>name</i> rather than by number. By default an enum
+constant emits its underlying numeric value (so <code class="ctag">OrderStatus.Shipped</code> becomes <code class="ctag">1</code>);
+<a href="Gehtsoft.ExpressionToJs.IJsConstantRegistry.html"><code>MapConstant</code></a> maps the enum <b>type</b> to
+a different literal - here its name:</p><div id="open36" style="display:none">
+  <p>Render the enum by name&nbsp;<a href="javascript: showdiv('close36'); hidediv('open36');" onclick="javascript: showdiv('close36'); hidediv('open36');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close36" style="display:inline">
+  <p>Render the enum by name&nbsp;<a href="javascript: showdiv('open36'); hidediv('close36');" onclick="javascript: showdiv('open36'); hidediv('close36');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example36"><code class="cs">compiler.Methods.MapMethod(typeof(OrderRules), nameof(OrderRules.StatusIs), &quot;jsv_status_is($0, $1)&quot;);
+compiler.Constants.MapConstant&lt;OrderStatus&gt;(s =&gt; &quot;'&quot; + s + &quot;'&quot;);
+ 
+// o =&gt; OrderRules.StatusIs(o.Status, OrderStatus.Shipped)
+//   default       -&gt; jsv_status_is(o.Status, 1)
+//   with the map  -&gt; jsv_status_is(o.Status, 'Shipped')</code></pre>
+</div><p><b>The JavaScript side:</b> a data contract - the client must carry <code class="ctag">Status</code> as the matching
+string. One caveat: this fires where the enum stays enum-typed (a method argument, as above). A
+direct <code class="ctag">o.Status == OrderStatus.Shipped</code> is lifted to an <code class="ctag">int</code> comparison by the C#
+compiler, so the constant is already a number and the map does not apply there.</p>
+<p></p>
+<h2>When a template is not enough</h2>
+<p>A template is a fixed string with <code class="ctag">$0</code>/<code class="ctag">$obj</code> holes. When the emitted form has to vary -
+on argument types, arity, or the <i>value</i> of an argument - implement the matching interface
+instead and register it with <code class="ctag">AddTranslator</code>:
+<a href="Gehtsoft.ExpressionToJs.IMethodCallTranslator.html"><code>IMethodCallTranslator</code></a>,
+<a href="Gehtsoft.ExpressionToJs.IConstantTranslator.html"><code>IConstantTranslator</code></a> or
+<a href="Gehtsoft.ExpressionToJs.IMemberTranslator.html"><code>IMemberTranslator</code></a>. Each receives the
+node and an <a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.html"><code>IExpressionEmitContext</code></a>
+(to recurse into sub-expressions with <code class="ctag">Emit</code>, and to escape strings/regex), and returns
+whether it handled the node. These are the very interfaces the built-ins are written against.</p>
+<p>For example, suppose <code class="ctag">Coupon.IsValid</code> gains a <code class="ctag">strict</code> flag that should select a
+different JavaScript function - a choice a fixed template can't make. The translator reads the
+constant argument and emits accordingly:</p><div id="open37" style="display:none">
+  <p>A method translator that branches on an argument&nbsp;<a href="javascript: showdiv('close37'); hidediv('open37');" onclick="javascript: showdiv('close37'); hidediv('open37');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close37" style="display:inline">
+  <p>A method translator that branches on an argument&nbsp;<a href="javascript: showdiv('open37'); hidediv('close37');" onclick="javascript: showdiv('open37'); hidediv('close37');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example37"><code class="cs">sealed class CouponTranslator : IMethodCallTranslator
+{
+    public bool TryTranslate(MethodCallExpression call, IExpressionEmitContext ctx, out string js)
+    {
+        if (call.Method.DeclaringType == typeof(Coupon) &amp;&amp; call.Method.Name == &quot;IsValid&quot;
+            &amp;&amp; call.Arguments.Count == 2)
+        {
+            string code = ctx.Emit(call.Arguments[0]);
+            bool strict = (bool)((ConstantExpression)call.Arguments[1]).Value;
+            js = strict ? $&quot;jsv_coupon_strict({code})&quot; : $&quot;jsv_coupon_ok({code})&quot;;
+            return true;
+        }
+        js = null;
+        return false;   // not mine - let another translator or the built-ins handle it
+    }
+}
+ 
+compiler.Methods.AddTranslator(new CouponTranslator());
+ 
+// o =&gt; Coupon.IsValid(o.CouponCode, true)
+//   -&gt; jsv_coupon_strict(o.CouponCode)</code></pre>
+</div><p>Returning <code class="ctag">false</code> passes the node on, so a translator handles only the shapes it recognises.</p>
+<p></p>
+<h2>Your mapping, your runtime</h2>
+<p>Whatever a template or translator emits must exist at evaluation time. If you emit
+<code class="ctag">jsv_coupon_ok(...)</code>, defining <code class="ctag">jsv_coupon_ok</code> in the JavaScript on the page is your
+responsibility. The library's contract is narrow: it emits text and ships its own
+<a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.html"><code>stub</code></a> - there is deliberately no
+companion-JS registration API, so how you bundle your own helpers is up to you.</p>
+<p></p>
+<h2>Parameter rendering is separate</h2>
+<p>These registries cover <i>types</i>. How a rule's <i>parameter</i> renders - the form-validation
+<code class="ctag">reference('path')</code> binding - is a different registry,
+<a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html"><code>compiler.Parameters</code></a>, covered in
+<a href="guides.model-rules.html">Validating against a model object</a>.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.model-rules.html">Validating against a model object</a></p></li>
+  <li><p><a href="guides.supported-features.html">Supported expression features</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

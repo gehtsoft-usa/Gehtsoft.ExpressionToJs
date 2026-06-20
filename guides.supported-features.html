@@ -1,0 +1,155 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Supported expression features</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Supported expression features</h1>
+<h2>Brief</h2>
+<p>The C# operators, methods and constructs you can use in a rule, and the ones you cannot.</p>
+<h2>Details</h2><p>A rule is an expression tree, and the compiler translates the constructs listed here. Anything
+not listed throws at compile time (when you read
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>JavaScriptExpression</code></a>),
+so an unsupported construct fails loudly on the server rather than silently misbehaving in the
+browser.</p>
+<p>Two principles run through everything below. First, <b>C# semantics win</b>: the emitted
+<code class="ctag">jsv_*</code> helpers reproduce C# behaviour, not JavaScript's - integer division truncates toward
+zero, <code class="ctag">int</code> arithmetic wraps on overflow, <code class="ctag">Math.Round</code> uses banker's rounding, and
+<code class="ctag">==</code> is typed and strict (no <code class="ctag">&quot;10&quot; == 10</code>); see
+<a href="guides.unit-testing.html">Unit-testing your expressions</a>. Second, <b>constant subtrees are
+folded</b>: a subtree with no free parameter and no ambient <code class="ctag">Now</code>/<code class="ctag">Today</code>/<code class="ctag">UtcNow</code>
+is evaluated at compile time and emitted as a literal.</p>
+<p></p>
+<h2>Operators</h2><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Category</p></td>
+    <td class="thdr" width="70%"><p>Supported</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Arithmetic</p></td>
+    <td class="tmain"><p><code class="ctag">+</code> <code class="ctag">-</code> <code class="ctag">*</code> <code class="ctag">/</code> <code class="ctag">%</code>, unary <code class="ctag">-</code>, and power.
+Integer division truncates and <code class="ctag">int</code> results wrap, matching C#.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Comparison</p></td>
+    <td class="tmain"><p><code class="ctag">&lt;</code> <code class="ctag">&lt;=</code> <code class="ctag">&gt;</code> <code class="ctag">&gt;=</code> <code class="ctag">==</code> <code class="ctag">!=</code>. Equality is
+strict and typed; two numbers compare with a small tolerance so <code class="ctag">0.1 + 0.2 ==
+0.3</code> holds.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Logical</p></td>
+    <td class="tmain"><p><code class="ctag">&amp;&amp;</code> <code class="ctag">||</code> <code class="ctag">!</code>, and logical XOR (<code class="ctag">^</code> on <code class="ctag">bool</code>).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Bitwise</p></td>
+    <td class="tmain"><p><code class="ctag">&amp;</code> <code class="ctag">|</code> <code class="ctag">^</code> on integers (wrapped to 32-bit).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Other</p></td>
+    <td class="tmain"><p>Conditional <code class="ctag">?:</code>, null-coalescing <code class="ctag">??</code>, array indexing
+<code class="ctag">a[i]</code>, and array/collection length.</p></td>
+  </tr>
+</table><p></p>
+<h2>Methods, members and helpers</h2><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Area</p></td>
+    <td class="thdr" width="70%"><p>Supported</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Math (<code class="ctag">System.Math</code>)</p></td>
+    <td class="tmain"><p><code class="ctag">Round</code> (banker's, including the <code class="ctag">Round(x, digits)</code> overload), <code class="ctag">Floor</code>,
+<code class="ctag">Ceiling</code>, <code class="ctag">Truncate</code>, <code class="ctag">Abs</code>, <code class="ctag">Sign</code>, <code class="ctag">Sqrt</code>, <code class="ctag">Pow</code>,
+<code class="ctag">Log</code>, <code class="ctag">Exp</code>, <code class="ctag">Min</code>, <code class="ctag">Max</code>, the trigonometric functions, and
+<code class="ctag">Math.PI</code>.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Strings</p></td>
+    <td class="tmain"><p><code class="ctag">Trim</code>/<code class="ctag">TrimStart</code>/<code class="ctag">TrimEnd</code>, <code class="ctag">ToUpper</code>/<code class="ctag">ToLower</code> (and the
+<code class="ctag">Invariant</code> variants), <code class="ctag">StartsWith</code>/<code class="ctag">EndsWith</code> (including the
+<code class="ctag">StringComparison</code> overload), <code class="ctag">Contains</code>, <code class="ctag">IndexOf</code>/<code class="ctag">LastIndexOf</code>,
+<code class="ctag">Replace</code>, <code class="ctag">PadLeft</code>/<code class="ctag">PadRight</code> (with optional pad char), <code class="ctag">Length</code>,
+the indexer, and <code class="ctag">ToString</code>.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Static string tests</p></td>
+    <td class="tmain"><p><code class="ctag">string.IsNullOrEmpty</code>, <code class="ctag">string.IsNullOrWhiteSpace</code> (true Unicode
+whitespace, matching C#).</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Characters</p></td>
+    <td class="tmain"><p><code class="ctag">char.IsUpper</code>, <code class="ctag">IsLower</code>, <code class="ctag">IsDigit</code>, <code class="ctag">IsLetter</code>,
+<code class="ctag">IsLetterOrDigit</code>, <code class="ctag">IsPunctuation</code>, <code class="ctag">IsControl</code>, <code class="ctag">IsWhiteSpace</code>.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Regex</p></td>
+    <td class="tmain"><p><code class="ctag">Regex.IsMatch(input, pattern)</code>. The pattern is escaped into a JS regex literal.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Collections (LINQ)</p></td>
+    <td class="tmain"><p><code class="ctag">Any</code>, <code class="ctag">All</code>, <code class="ctag">Count</code>, <code class="ctag">First</code>, <code class="ctag">Last</code>,
+<code class="ctag">FirstOrDefault</code>/<code class="ctag">LastOrDefault</code> (with a predicate), <code class="ctag">Where</code>,
+<code class="ctag">Select</code>, <code class="ctag">Sum</code>, <code class="ctag">Min</code>, <code class="ctag">Max</code>, <code class="ctag">Distinct</code>, <code class="ctag">Contains</code>.
+They return real JS values, so they chain.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Dates and times</p></td>
+    <td class="tmain"><p>Component reads <code class="ctag">Year</code>/<code class="ctag">Month</code>/<code class="ctag">Day</code>/<code class="ctag">Hour</code>/<code class="ctag">Minute</code>/<code class="ctag">Second</code>/<code class="ctag">DayOfWeek</code>
+(framed by <a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode</code></a>);
+<code class="ctag">AddDays</code>/<code class="ctag">AddHours</code>/<code class="ctag">AddMinutes</code>/<code class="ctag">AddSeconds</code>; adding/subtracting a
+<code class="ctag">TimeSpan</code>; subtracting two dates; the <code class="ctag">TimeSpan.Total*</code> properties; and the
+dynamic clock <code class="ctag">Now</code>/<code class="ctag">Today</code>/<code class="ctag">UtcNow</code>. See
+<a href="guides.dates.html">Dates and time zones</a>.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Parity helpers (<a href="Gehtsoft.ExpressionToJs.Functions.html"><code>Functions</code></a>)</p></td>
+    <td class="tmain"><p>Checks with no direct BCL-to-JS equivalent, shipped as matched pairs (a <code class="ctag">Functions</code>
+method and an identical <code class="ctag">jsv_*</code> twin): <code class="ctag">DaysSince</code>, <code class="ctag">MonthsSince</code>,
+<code class="ctag">YearsSince</code>, <code class="ctag">IsCreditCardNumberCorrect</code> (Luhn), <code class="ctag">ToBool</code>, <code class="ctag">ToInt</code>,
+<code class="ctag">Fractional</code>, <code class="ctag">IsNull</code>, <code class="ctag">IsNotNull</code>, <code class="ctag">IsNullOrEmpty</code>,
+<code class="ctag">IsNotNullOrEmpty</code>.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Enums</p></td>
+    <td class="tmain"><p>Emitted as the underlying numeric value (flags enums combine), so client-side enum
+fields must carry the numeric value. To emit an enum by <i>name</i> instead, register
+a constant translator - see
+<a href="guides.extending.html">Extending the translator for your own types</a>.</p></td>
+  </tr>
+</table><p></p>
+<h2>Not supported</h2>
+<p>These throw at compile time, so they fail loudly on the server rather than misbehaving in the
+browser:</p><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Construct</p></td>
+    <td class="thdr" width="70%"><p>Why / alternative</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>String <code class="ctag">+</code> concat, <code class="ctag">string.Format</code>, <code class="ctag">string.Split</code></p></td>
+    <td class="tmain"><p>Locale and format correctness on the JS side is out of scope. (<code class="ctag">+</code> on strings
+compiles to a <code class="ctag">string.Concat</code> call, not an <code class="ctag">Add</code>.)</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">DateTime.AddMonths</code>/<code class="ctag">AddYears</code>, <code class="ctag">DateTime.Parse</code>, <code class="ctag">TimeSpan.FromX</code>, <code class="ctag">DateTimeOffset</code></p></td>
+    <td class="tmain"><p>Not translated; use the supported date arithmetic, or a custom translator.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Bit shifts <code class="ctag">&lt;&lt;</code> <code class="ctag">&gt;&gt;</code>, <code class="ctag">int.TryParse</code>/<code class="ctag">double.TryParse</code>, LINQ <code class="ctag">Average</code>, predicate-less <code class="ctag">FirstOrDefault</code>/<code class="ctag">LastOrDefault</code></p></td>
+    <td class="tmain"><p>Not yet translated.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><code class="ctag">long</code> beyond 2^53</p></td>
+    <td class="tmain"><p>Loses precision in JavaScript and is not made safe.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p>Statement-bodied lambdas</p></td>
+    <td class="tmain"><p>Use a single expression.</p></td>
+  </tr>
+</table><p>The not-supported list reflects the current built-ins; most gaps can be closed for your own code
+with a custom translator - see <a href="guides.extending.html">Extending the translator for your own
+types</a>.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.dates.html">Dates and time zones</a></p></li>
+  <li><p><a href="guides.extending.html">Extending the translator for your own types</a></p></li>
+  <li><p><a href="guides.unit-testing.html">Unit-testing your expressions</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

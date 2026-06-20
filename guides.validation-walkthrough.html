@@ -1,0 +1,157 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Validating on all tiers from one source of truth</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="res/mermaid.min.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><script>mermaid.initialize({startOnLoad:true});</script><h1>Validating on all tiers from one source of truth</h1>
+<h2>Brief</h2>
+<p>Write a validation rule once in C#, run it on the server, and run the same rule in the browser.</p>
+<h2>Details</h2><p>The goal of this library is one rule, two runtimes. You write a validation predicate once, as
+a C# lambda. The server runs it directly as a compiled delegate; the browser runs an
+equivalent JavaScript expression emitted from the same lambda. Because both ends come from a
+single definition, they cannot drift apart.</p><div id="open1" style="display:none">
+  <p>One rule, two runtimes&nbsp;<a href="javascript: showdiv('close1'); hidediv('open1');" onclick="javascript: showdiv('close1'); hidediv('open1');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close1" style="display:inline">
+  <p>One rule, two runtimes&nbsp;<a href="javascript: showdiv('open1'); hidediv('close1');" onclick="javascript: showdiv('open1'); hidediv('close1');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <div class="mermaid">flowchart TD
+R[&quot;C# rule, written once&quot;]
+R --&gt; C[&quot;Compile to a delegate&quot;]
+R --&gt; K[&quot;ExpressionCompiler&quot;]
+C --&gt; SV[&quot;Server: run the delegate&quot;]
+K --&gt; JS[&quot;JavaScript expression&quot;]
+JS --&gt; EV[&quot;Browser: eval with stub.js&quot;]
+SV --&gt; V[&quot;Same boolean verdict&quot;]
+EV --&gt; V</div>
+</div><p>This walkthrough takes one rule from C# all the way into the page.</p>
+<p></p>
+<h2>Step 1 - write the rule once</h2>
+<p>A rule is an ordinary <code class="ctag">Expression&lt;Func&lt;...&gt;&gt;</code>, usually a boolean predicate over
+your model. Keep it an expression (not a statement lambda) so the compiler can walk it.</p><div id="open2" style="display:none">
+  <p>The rule&nbsp;<a href="javascript: showdiv('close2'); hidediv('open2');" onclick="javascript: showdiv('close2'); hidediv('open2');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close2" style="display:inline">
+  <p>The rule&nbsp;<a href="javascript: showdiv('open2'); hidediv('close2');" onclick="javascript: showdiv('open2'); hidediv('close2');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example2"><code class="cs">using System.Linq.Expressions;
+using Gehtsoft.ExpressionToJs;
+
+Expression&lt;Func&lt;int, bool&gt;&gt; rule = x =&gt; x &gt; 0 &amp;&amp; x &lt; 100;</code></pre>
+</div><p></p>
+<h2>Step 2 - run it on the server</h2>
+<p>On the server the rule is just a delegate. Compile it and invoke it like any <code class="ctag">Func</code>. This
+is the authoritative check that cannot be bypassed.</p><div id="open3" style="display:none">
+  <p>Server side&nbsp;<a href="javascript: showdiv('close3'); hidediv('open3');" onclick="javascript: showdiv('close3'); hidediv('open3');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close3" style="display:inline">
+  <p>Server side&nbsp;<a href="javascript: showdiv('open3'); hidediv('close3');" onclick="javascript: showdiv('open3'); hidediv('close3');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example3"><code class="cs">bool ok = rule.Compile()(42);   // true</code></pre>
+</div><p></p>
+<h2>Step 3 - emit the JavaScript</h2>
+<p>Hand the same lambda to <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>ExpressionCompiler</code></a>
+and read <code class="ctag">JavaScriptExpression</code>. The result is computed once and cached, so configure the
+compiler (date mode, custom translators) <i>before</i> reading it.</p><div id="open4" style="display:none">
+  <p>Emitting the client code&nbsp;<a href="javascript: showdiv('close4'); hidediv('open4');" onclick="javascript: showdiv('close4'); hidediv('open4');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close4" style="display:inline">
+  <p>Emitting the client code&nbsp;<a href="javascript: showdiv('open4'); hidediv('close4');" onclick="javascript: showdiv('open4'); hidediv('close4');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example4"><code class="cs">string js = new ExpressionCompiler(rule).JavaScriptExpression;
+// js == &quot;((jsv_greater(x, 0)) &amp;&amp; (jsv_less(x, 100)))&quot;</code></pre>
+</div><p>The emitted text is an <i>expression</i>, not a program. It calls small runtime helpers named
+<code class="ctag">jsv_*</code> (<code class="ctag">jsv_greater</code>, <code class="ctag">jsv_equal</code>, <code class="ctag">jsv_match</code>, ...). Those helpers exist
+so JavaScript reproduces C# semantics - integer division, banker's rounding, typed equality,
+date handling - rather than JavaScript's looser defaults. See
+<a href="guides.supported-features.html">Supported expression features</a> for the full set.</p>
+<p></p>
+<h2>Step 4 - ship the runtime stub to the page</h2>
+<p>The <code class="ctag">jsv_*</code> helpers live in <code class="ctag">stub.js</code>, shipped inside the assembly as an embedded
+resource. Retrieve it with
+<a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.html"><code>ExpressionToJsStubAccessor.GetJsIncludesAsString</code></a>
+and include it on the page <b>once</b>, before evaluating any compiled expression. It is the
+same for every expression, so cache it site-wide rather than per rule.</p><div id="open5" style="display:none">
+  <p>Getting the runtime&nbsp;<a href="javascript: showdiv('close5'); hidediv('open5');" onclick="javascript: showdiv('close5'); hidediv('open5');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close5" style="display:inline">
+  <p>Getting the runtime&nbsp;<a href="javascript: showdiv('open5'); hidediv('close5');" onclick="javascript: showdiv('open5'); hidediv('close5');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example5"><code class="cs">string stub = ExpressionToJsStubAccessor.GetJsIncludesAsString();</code></pre>
+</div><p>There are two common ways to get that string to the browser.</p>
+<p><b>Render it inline</b> - write the stub straight into the page, for example from a Razor
+layout so every page that validates has it:</p><div id="open6" style="display:none">
+  <p>Inline in an ASP.NET Razor layout&nbsp;<a href="javascript: showdiv('close6'); hidediv('open6');" onclick="javascript: showdiv('close6'); hidediv('open6');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close6" style="display:inline">
+  <p>Inline in an ASP.NET Razor layout&nbsp;<a href="javascript: showdiv('open6'); hidediv('close6');" onclick="javascript: showdiv('open6'); hidediv('close6');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example6"><code class="cshtml">@* _Layout.cshtml - emit the runtime once, e.g. in the page head *@
+&lt;script&gt;
+    @Html.Raw(ExpressionToJsStubAccessor.GetJsIncludesAsString())
+&lt;/script&gt;</code></pre>
+</div><p><b>Serve it as a static script</b> - the stub is just a set of <code class="ctag">jsv_*</code> function
+definitions, so you can expose it at a stable URL and reference it with a normal
+<code class="ctag">&lt;script&gt;</code> tag (no wrapping needed - it defines the helpers as globals). It never changes
+between requests, so the browser caches it like any other static script - the better option for
+a busy site:</p><div id="open7" style="display:none">
+  <p>A REST endpoint that returns the stub&nbsp;<a href="javascript: showdiv('close7'); hidediv('open7');" onclick="javascript: showdiv('close7'); hidediv('open7');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close7" style="display:inline">
+  <p>A REST endpoint that returns the stub&nbsp;<a href="javascript: showdiv('open7'); hidediv('close7');" onclick="javascript: showdiv('open7'); hidediv('close7');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example7"><code class="cs">// Program.cs - the stub is constant, so this response is highly cacheable
+app.MapGet(&quot;/js/expr-stub.js&quot;, () =&gt;
+    Results.Text(ExpressionToJsStubAccessor.GetJsIncludesAsString(), &quot;application/javascript&quot;));</code></pre>
+</div><div id="open8" style="display:none">
+  <p>Referencing it from the page&nbsp;<a href="javascript: showdiv('close8'); hidediv('open8');" onclick="javascript: showdiv('close8'); hidediv('open8');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close8" style="display:inline">
+  <p>Referencing it from the page&nbsp;<a href="javascript: showdiv('open8'); hidediv('close8');" onclick="javascript: showdiv('open8'); hidediv('close8');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example8"><code class="html">&lt;!-- in the page head, before any emitted rule runs --&gt;
+&lt;script src=&quot;/js/expr-stub.js&quot;&gt;&lt;/script&gt;</code></pre>
+</div><p></p>
+<h2>Step 5 - evaluate in the browser</h2>
+<p>If you rendered the rule inline, bind the variables the expression references (here <code class="ctag">x</code>)
+and evaluate the emitted string. It returns the same boolean the server computed:</p><div id="open9" style="display:none">
+  <p>Evaluating inline&nbsp;<a href="javascript: showdiv('close9'); hidediv('open9');" onclick="javascript: showdiv('close9'); hidediv('open9');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close9" style="display:inline">
+  <p>Evaluating inline&nbsp;<a href="javascript: showdiv('open9'); hidediv('close9');" onclick="javascript: showdiv('open9'); hidediv('close9');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example9"><code class="js">// stub.js already loaded once on the page
+var x = 42;
+var ok = ((jsv_greater(x, 0)) &amp;&amp; (jsv_less(x, 100)));   // true</code></pre>
+</div><p>In a script-tag setup you fetch each rule from the server as well. A bare expression is not
+callable on its own, so wrap it in a <b>named function</b> - the name fixed, or taken from the
+request - and return that:</p><div id="open10" style="display:none">
+  <p>A REST endpoint that returns the rule as a function&nbsp;<a href="javascript: showdiv('close10'); hidediv('open10');" onclick="javascript: showdiv('close10'); hidediv('open10');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close10" style="display:inline">
+  <p>A REST endpoint that returns the rule as a function&nbsp;<a href="javascript: showdiv('open10'); hidediv('close10');" onclick="javascript: showdiv('open10'); hidediv('close10');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example10"><code class="cs">// GET /js/rules/{name} -&gt; a script defining a function called {name}
+app.MapGet(&quot;/js/rules/{name}&quot;, (string name) =&gt;
+{
+    string expr = new ExpressionCompiler(Rules.For(name)).JavaScriptExpression;
+    string script = $&quot;function {name}(x) {{ return {expr}; }}&quot;;
+    return Results.Text(script, &quot;application/javascript&quot;);
+});</code></pre>
+</div><p>Load the stub once, the rule script alongside it, and call the function like any other:</p><div id="open11" style="display:none">
+  <p>Loading the rule and calling it&nbsp;<a href="javascript: showdiv('close11'); hidediv('open11');" onclick="javascript: showdiv('close11'); hidediv('open11');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close11" style="display:inline">
+  <p>Loading the rule and calling it&nbsp;<a href="javascript: showdiv('open11'); hidediv('close11');" onclick="javascript: showdiv('open11'); hidediv('close11');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example11"><code class="html">&lt;!-- the jsv_* runtime, once --&gt;
+&lt;script src=&quot;/js/expr-stub.js&quot;&gt;&lt;/script&gt;
+&lt;!-- defines function ageOk(x) --&gt;
+&lt;script src=&quot;/js/rules/ageOk&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+    if (!ageOk(document.getElementById(&quot;age&quot;).value))
+        showError(&quot;Enter a value between 1 and 99.&quot;);
+&lt;/script&gt;</code></pre>
+</div><p></p>
+<h2>Beyond a single value</h2>
+<p>The rule above validates one base-type value bound to a bare variable. Some rules instead have
+to see <b>several fields at once</b> - for example, that a password and its confirmation match.
+Those are written against the whole model and bound to the form on the page, which is a little
+extra setup covered in its own guide:
+<a href="guides.model-rules.html">Validating against a model object</a>.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.model-rules.html">Validating against a model object</a></p></li>
+  <li><p><a href="guides.supported-features.html">Supported expression features</a></p></li>
+  <li><p><a href="guides.unit-testing.html">Unit-testing your expressions</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

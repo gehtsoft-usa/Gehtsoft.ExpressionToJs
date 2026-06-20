@@ -1,0 +1,45 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>ExpressionCompiler.FormatDateLiteral</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>ExpressionCompiler.FormatDateLiteral</b></code></h1><h2>Brief</h2>
+<p>Renders a fixed date as the JavaScript Date literal the compiler would emit for it.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code>string&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>FormatDateLiteral</b> (DateTime dt, <a href="Gehtsoft.ExpressionToJs.DateTimeMode.html">Gehtsoft.ExpressionToJs.DateTimeMode</a> mode) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>dt</code></td>
+    <td class="tmain" width="69%"><p>The date to render. A midnight value emits a date-only constructor; any non-zero time
+component emits the longer form down to seconds. The value's
+is ignored -              alone decides the frame.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>mode</code></td>
+    <td class="tmain" width="69%"><p>Which frame to build the date in: <a href="Gehtsoft.ExpressionToJs.DateTimeMode.Local.vt1.html"><code>DateTimeMode.Local</code></a>             for a local-time
+constructor, <a href="Gehtsoft.ExpressionToJs.DateTimeMode.Utc.yo6.html"><code>DateTimeMode.Utc</code></a>             for a UTC one. This must match how the rest
+of the page interprets dates or the literal will be off by the client's offset.</p></td>
+  </tr>
+</table><h2>Details</h2><p>Use it when hand-authoring a JavaScript fragment that must agree with compiled
+expressions on date framing - call it with the same
+<a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.DateMode.Ht5.html"><code>ExpressionCompiler.DateMode</code></a>             you give the
+compiler so both sides build dates the same way.</p><p>Declared in <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html">ExpressionCompiler</a></p>
+<p>
+  <center><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('Gehtsoft.ExpressionToJs.ExpressionCompiler');</script></body></html>

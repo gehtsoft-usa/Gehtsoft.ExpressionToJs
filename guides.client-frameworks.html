@@ -1,0 +1,137 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Wiring into client frameworks</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Wiring into client frameworks</h1>
+<h2>Brief</h2>
+<p>Attach a compiled rule to the validation lifecycle of ASP.NET, jQuery, Angular, React or Vue.</p>
+<h2>Details</h2><p>By the time a rule reaches the page, the library has done its part: you have the
+<a href="guides.validation-walkthrough.html">runtime stub</a> and a compiled rule. Wrapped as a
+function (see the walkthrough and <a href="guides.model-rules.html">model rules</a>), that rule is just
+a <b>boolean</b>:</p><ul class="main">
+  <li><p>a <b>single-field</b> rule takes the field value - <code class="ctag">ageOk(value)</code>; or</p></li>
+  <li><p>a <b>whole-model</b> rule reads the model - <code class="ctag">passwordsMatch()</code> via
+<code class="ctag">reference()</code>, or <code class="ctag">rule(model)</code> when you compile it for object access.</p></li>
+</ul><p>Wiring it into any framework is therefore the same two steps: <b>call the boolean at the right
+moment, and map <code class="ctag">false</code> to an error message</b>. What differs per framework is only <i>where</i>
+that moment is and how errors are surfaced.</p>
+<p>The named rule function (<code class="ctag">ageOk</code>, <code class="ctag">passwordsMatch</code>) gets onto the page one of two ways,
+both from the <a href="guides.validation-walkthrough.html">walkthrough</a>: a server-rendered page
+<b>embeds</b> it inline (the server already holds the compiler), while a single-page app
+<b>serves</b> it as a script or bundles it. The ASP.NET section embeds; the rest assume the
+function is already loaded.</p>
+<p></p>
+<h2>Where does the rule read its inputs?</h2>
+<p>One choice decides the rest. A <b>DOM-based</b> stack (server-rendered pages, jQuery) keeps the
+values in form inputs, so a whole-model rule's <code class="ctag">reference()</code> can read them straight from the
+DOM. A <b>component</b> stack (Angular, React, Vue) keeps state in the component, not the DOM - so
+there, compile whole-model rules for <a href="guides.model-rules.html">object access</a>
+(<code class="ctag">value.Field</code>) and call <code class="ctag">rule(model)</code> with the component's own state. Single-field
+rules are the same everywhere: hand the field value to <code class="ctag">rule(value)</code>.</p>
+<p></p>
+<h2>ASP.NET</h2>
+<p>The server is already rendering the page and already holds the compiler, so <b>embed</b> the rule
+inline rather than fetching it separately: emit it as a function with Razor, right where it is
+used (the stub goes in the layout, as in the
+<a href="guides.validation-walkthrough.html">walkthrough</a>). Then call it from a
+<code class="ctag">CustomValidator</code>'s client function - <code class="ctag">args.Value</code> is the field, <code class="ctag">args.IsValid</code> is
+the verdict:</p><div id="open21" style="display:none">
+  <p>Embedding the rule and calling it&nbsp;<a href="javascript: showdiv('close21'); hidediv('open21');" onclick="javascript: showdiv('close21'); hidediv('open21');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close21" style="display:inline">
+  <p>Embedding the rule and calling it&nbsp;<a href="javascript: showdiv('open21'); hidediv('close21');" onclick="javascript: showdiv('open21'); hidediv('close21');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example21"><code class="cshtml">@* AgeRule is the C# lambda x =&gt; x &gt; 0 &amp;&amp; x &lt; 100 *@
+&lt;asp:TextBox id=&quot;Age&quot; runat=&quot;server&quot; /&gt;
+&lt;asp:CustomValidator runat=&quot;server&quot; ControlToValidate=&quot;Age&quot;
+     ClientValidationFunction=&quot;validateAge&quot; ErrorMessage=&quot;Enter a value between 1 and 99.&quot; /&gt;
+ 
+&lt;script&gt;
+    function ageOk(x) { return @Html.Raw(new ExpressionCompiler(AgeRule).JavaScriptExpression); }
+ 
+    function validateAge(sender, args) {
+        args.IsValid = ageOk(args.Value);
+    }
+&lt;/script&gt;</code></pre>
+</div><p>For a whole-model rule, emit it the same way (compiled for <code class="ctag">reference()</code>, as a no-argument
+function), attach the validator to any field, and call it - <code class="ctag">reference()</code> reads the rest of
+the form.</p>
+<p></p>
+<h2>jQuery</h2>
+<p>Register the rule as a custom method, then name it in the field's rules. <code class="ctag">this.optional(element)</code>
+keeps an empty field from failing (let a <code class="ctag">required</code> rule own that):</p><div id="open22" style="display:none">
+  <p>A jQuery Validate method&nbsp;<a href="javascript: showdiv('close22'); hidediv('open22');" onclick="javascript: showdiv('close22'); hidediv('open22');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close22" style="display:inline">
+  <p>A jQuery Validate method&nbsp;<a href="javascript: showdiv('open22'); hidediv('close22');" onclick="javascript: showdiv('open22'); hidediv('close22');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example22"><code class="js">$.validator.addMethod(&quot;ageOk&quot;, function (value, element) {
+    return this.optional(element) || ageOk(value);
+}, &quot;Enter a value between 1 and 99.&quot;);
+ 
+$(&quot;#signup&quot;).validate({
+    rules: { age: { ageOk: true } }
+});</code></pre>
+</div><p>A whole-model rule (such as the password match) is a method on the confirmation field that ignores
+its argument and calls the no-argument rule.</p>
+<p></p>
+<h2>Angular</h2>
+<p>In reactive forms a validator is a function returning <code class="ctag">null</code> when valid or an error object
+when not. Put a single-field rule on the control; put a whole-model rule on the
+<code class="ctag">FormGroup</code> so it sees every field:</p><div id="open23" style="display:none">
+  <p>Reactive-form validators&nbsp;<a href="javascript: showdiv('close23'); hidediv('open23');" onclick="javascript: showdiv('close23'); hidediv('open23');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close23" style="display:inline">
+  <p>Reactive-form validators&nbsp;<a href="javascript: showdiv('open23'); hidediv('close23');" onclick="javascript: showdiv('open23'); hidediv('close23');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example23"><code class="js">// single field
+function ageOkValidator(control) {
+    return ageOk(control.value) ? null : { ageOk: true };
+}
+ 
+// whole model - compiled for object access, fed the form's value
+function passwordsMatchValidator(group) {
+    return rule(group.value) ? null : { passwordsMatch: true };
+}
+ 
+this.form = new FormGroup({
+    password: new FormControl(&quot;&quot;),
+    confirm:  new FormControl(&quot;&quot;),
+}, { validators: passwordsMatchValidator });</code></pre>
+</div><p></p>
+<h2>React</h2>
+<p>React has no built-in validation, so call the rule wherever you check the form - here a controlled
+component derives validity on each render:</p><div id="open24" style="display:none">
+  <p>A controlled component&nbsp;<a href="javascript: showdiv('close24'); hidediv('open24');" onclick="javascript: showdiv('close24'); hidediv('open24');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close24" style="display:inline">
+  <p>A controlled component&nbsp;<a href="javascript: showdiv('open24'); hidediv('close24');" onclick="javascript: showdiv('open24'); hidediv('close24');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example24"><code class="js">const [age, setAge] = useState(&quot;&quot;);
+const valid = ageOk(age);
+ 
+return (
+    &lt;&gt;
+        &lt;input value={age} onChange={e =&gt; setAge(e.target.value)} /&gt;
+        {!valid &amp;&amp; &lt;span className=&quot;error&quot;&gt;Enter a value between 1 and 99.&lt;/span&gt;}
+    &lt;/&gt;
+);</code></pre>
+</div><p>With a form library the rule drops into its hook - for react-hook-form,
+<code class="ctag">register(&quot;age&quot;, { validate: v =&gt; ageOk(v) || &quot;Enter a value between 1 and 99.&quot; })</code>. A
+whole-model rule (compiled for object access) takes the form's values object: <code class="ctag">rule(getValues())</code>.</p>
+<p></p>
+<h2>Vue</h2>
+<p>In Vue derive validity from state with a computed value:</p><div id="open25" style="display:none">
+  <p>Computed validity&nbsp;<a href="javascript: showdiv('close25'); hidediv('open25');" onclick="javascript: showdiv('close25'); hidediv('open25');" class="action">Show<span class="side-icon dripicons-chevron-right"></span></a></p>
+</div>
+<div id="close25" style="display:inline">
+  <p>Computed validity&nbsp;<a href="javascript: showdiv('open25'); hidediv('close25');" onclick="javascript: showdiv('open25'); hidediv('close25');" class="action">Hide<span class="side-icon dripicons-chevron-down"></span></a></p>
+  <pre class="example" id="example25"><code class="js">const age = ref(&quot;&quot;);
+const ageValid = computed(() =&gt; ageOk(age.value));
+ 
+// whole model - pass the reactive state object (compiled for object access)
+const formValid = computed(() =&gt; rule(form));</code></pre>
+</div><p>With VeeValidate, the rule becomes a custom rule: <code class="ctag">defineRule(&quot;ageOk&quot;, ageOk)</code>.</p>
+<p></p>
+<h2>See also</h2><ul class="main">
+  <li><p><a href="guides.validation-walkthrough.html">Validating on all tiers from one source of truth</a></p></li>
+  <li><p><a href="guides.model-rules.html">Validating against a model object</a></p></li>
+</ul><p>
+  <center><a href="main.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

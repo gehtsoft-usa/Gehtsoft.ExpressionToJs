@@ -1,0 +1,43 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>IMemberTranslator.TryTranslate</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>public method <b>IMemberTranslator.TryTranslate</b></code></h1><h2>Brief</h2>
+<p>Implement this to emit a property/field read the built-ins don't cover.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code>bool&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>TryTranslate</b> (MemberExpression member, <a href="Gehtsoft.ExpressionToJs.IExpressionEmitContext.html">Gehtsoft.ExpressionToJs.IExpressionEmitContext</a> context, out string js) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>member</code></td>
+    <td class="tmain" width="69%"><p>The member access to inspect; its <code class="ctag">Member</code> and <code class="ctag">Expression</code> tell you what is being read and from what.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>context</code></td>
+    <td class="tmain" width="69%"><p>Use it to emit the target expression (<code class="ctag">member.Expression</code>) and read the date mode.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>js</code></td>
+    <td class="tmain" width="69%"><p>Receives the emitted JavaScript when you return <code class="ctag">true</code>; otherwise leave it null.</p></td>
+  </tr>
+</table><h2>Details</h2><p>Check the member's declaring type and name, and return <code class="ctag">false</code> for reads that aren't
+yours.</p><p>Declared in <a href="Gehtsoft.ExpressionToJs.IMemberTranslator.html">IMemberTranslator</a></p>
+<p>
+  <center><a href="Gehtsoft.ExpressionToJs.IMemberTranslator.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('Gehtsoft.ExpressionToJs.IMemberTranslator');</script></body></html>

@@ -1,0 +1,94 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Gehtsoft.ExpressionToJs</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1>Gehtsoft.ExpressionToJs</h1>
+<h2>Brief</h2>
+<p>Compile a C# validation rule once and run it on both the server and the browser.</p>
+<h2>Details</h2><p><b>One rule, two runtimes, no drift.</b></p>
+<p>Form validation almost always has to exist twice: once on the server, where it is
+authoritative and cannot be bypassed, and once in the browser, where it gives the user
+instant feedback without a round trip. Written by hand, those two copies drift apart - a
+rule tightened on the server is forgotten on the client, an edge case fixed in JavaScript
+never makes it back into C#, and the two ends quietly disagree about what &quot;valid&quot; means.</p>
+<p><b>Gehtsoft.ExpressionToJs</b> removes the second copy. You write the rule once, as an
+ordinary C# lambda - typically a boolean predicate over your model. The server runs that
+lambda directly, compiled to a normal delegate. The same lambda is translated into an
+equivalent JavaScript expression that runs in the browser. There is a single source of
+truth, so the client and server cannot disagree: change the C# predicate and both ends
+change together.</p>
+<p>Because the emitted code is a faithful translation - same operators, same string and date
+handling, same null and numeric semantics - a value that passes (or fails) on one side
+passes (or fails) the same way on the other.</p>
+<p><b>The API at a glance</b></p><table class="tmain" width="100%">
+  <tr>
+    <td class="thdr" width="30%"><p>Type</p></td>
+    <td class="thdr" width="70%"><p>Purpose</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.html"><code>ExpressionCompiler</code></a></p></td>
+    <td class="tmain"><p>The entry point: wrap a lambda, read the emitted JavaScript.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.Functions.html"><code>Functions</code></a></p></td>
+    <td class="tmain"><p>Validation helpers (age, Luhn check, lenient coercions, null tests) safe to call
+inside a rule, because each one has a matching JavaScript implementation.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.ExpressionToJsStubAccessor.html"><code>ExpressionToJsStubAccessor</code></a></p></td>
+    <td class="tmain"><p>The JavaScript runtime the emitted expressions depend on; load it into the page once.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain"><p><a href="Gehtsoft.ExpressionToJs.DateTimeMode.html"><code>DateTimeMode</code></a></p></td>
+    <td class="tmain"><p>Selects how dates are framed (local time or UTC) so both ends agree on the calendar.</p></td>
+  </tr>
+</table><p>This page covers <i>why</i> the library exists. The guides listed below cover <i>how</i> to use it.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Articles</b></td>
+  </tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.validation-walkthrough.html">Validating on all tiers from one source of truth</a></p>
+    <p>Write a validation rule once in C#, run it on the server, and run the same rule in the browser.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.model-rules.html">Validating against a model object</a></p>
+    <p>Write rules that span several fields of a model, bound to the form on the page.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.client-frameworks.html">Wiring into client frameworks</a></p>
+    <p>Attach a compiled rule to the validation lifecycle of ASP.NET, jQuery, Angular, React or Vue.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.supported-features.html">Supported expression features</a></p>
+    <p>The C# operators, methods and constructs you can use in a rule, and the ones you cannot.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.dates.html">Dates and time zones</a></p>
+    <p>Pick a date frame with DateTimeMode so the server and the browser agree on the calendar.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.extending.html">Extending the translator for your own types</a></p>
+    <p>Map a domain method, constant type or property the built-ins do not cover, without subclassing.</p>
+  </td>
+</tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="guides.unit-testing.html">Unit-testing your expressions</a></p>
+    <p>Prove the C# rule and its emitted JavaScript agree, by running both and comparing - the way this library tests itself.</p>
+  </td>
+</tr></table>
+<p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Groups</b></td>
+  </tr><tr>
+  <td colspan="2" class="tmain">
+    <p><a href="Gehtsoft.ExpressionToJs.html">Namespace Gehtsoft.ExpressionToJs</a></p>
+    <p>The common namespace for all of the library's classes.</p>
+  </td>
+</tr></table><script language="javascript" type="text/javascript">syncList();</script></body></html>

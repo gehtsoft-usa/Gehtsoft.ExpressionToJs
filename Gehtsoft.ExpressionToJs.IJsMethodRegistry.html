@@ -1,0 +1,41 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>IJsMethodRegistry</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>interface <b>IJsMethodRegistry</b></code></h1>
+<h2>Brief</h2>
+<p>Additive extension surface for mapping method calls to JavaScript.</p>
+<h2>Details</h2><p>Registrations are consulted <b>before</b> the (fixed, correctly-ordered) built-ins, so a
+consumer can shadow a specific method without being able to reorder or remove built-ins - the
+built-in precedence invariants are preserved. Registrations are tried in the order added.</p><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Public Methods</b></td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsMethodRegistry.AddTranslator.7B1.html">AddTranslator</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Register a custom translator (consulted before built-ins).</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsMethodRegistry.MapMethod.7tC.html">MapMethod</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Map a method (by type + name) to a JavaScript template ($obj, $0, $1, ...).</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="tmain">
+      <p><a href="Gehtsoft.ExpressionToJs.IJsMethodRegistry.MapMethod.lE4.html">MapMethod</a></p>
+    </td>
+    <td class="tmain" width="69%">
+      <p>Map a specific method to a JavaScript template ($obj, $0, $1, ...).</p>
+    </td>
+  </tr>
+</table><p>
+  <center><a href="Gehtsoft.ExpressionToJs.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList();</script></body></html>

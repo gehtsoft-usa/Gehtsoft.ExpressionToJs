@@ -1,0 +1,40 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>Functions.MonthsSince</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>static public method <b>Functions.MonthsSince</b></code></h1><h2>Brief</h2>
+<p>Counts completed calendar months between two dates, ignoring partial months.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code>double&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>MonthsSince</b> (DateTime args0, DateTime args1) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>args0</code></td>
+    <td class="tmain" width="69%"><p>The reference (usually later) date; its time component is discarded.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>args1</code></td>
+    <td class="tmain" width="69%"><p>The baseline (usually earlier) date; its time component is discarded. As with
+<a href="Gehtsoft.ExpressionToJs.Functions.DaysSince.pc1.html"><code>Functions.DaysSince</code></a>            , the argument order sets the sign of the result.</p></td>
+  </tr>
+</table><h2>Details</h2><p>Use it for age-in-months or tenure rules where a partial month should not count - the
+result advances only when a full calendar month has elapsed, not on a raw 30-day division.</p><p>Declared in <a href="Gehtsoft.ExpressionToJs.Functions.html">Functions</a></p>
+<p>
+  <center><a href="Gehtsoft.ExpressionToJs.Functions.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('Gehtsoft.ExpressionToJs.Functions');</script></body></html>

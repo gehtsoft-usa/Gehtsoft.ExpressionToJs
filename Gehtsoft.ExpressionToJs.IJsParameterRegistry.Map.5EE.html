@@ -1,0 +1,50 @@
+﻿<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><title>IJsParameterRegistry.Map</title><link rel="stylesheet" href="highlighter/default.css">
+<link rel="stylesheet" href="res/styles.css">
+<link rel="stylesheet" href="res/dripicons.css"></head><body><script type="text/javascript" src="highlighter/highlight.pack.js"></script><script type="text/javascript" src="highlighter/highlight.cshtml.js"></script><script type="text/javascript" src="settings.js"></script><script type="text/javascript" src="res/page-scripts.js"></script><script type="text/javascript">
+    loadStarted();
+</script><h1><code>public method <b>IJsParameterRegistry.Map</b></code></h1><h2>Brief</h2>
+<p>Bind the matching rule parameters with custom rendering.</p>
+<table class="tmain" width="100%">
+  <tr>
+    <td class="thdr"><b>Declaration</b></td>
+  </tr>
+  <tr>
+    <td class="tmain"><table class="decl">
+  <tr>
+    <td colspan="2">C#</td>
+  </tr>
+  <tr>
+    <td width="1%" nowrap valign="top"><code><a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html">Gehtsoft.ExpressionToJs.IJsParameterRegistry</a>&nbsp;</code></td>
+    <td width="99%" valign="top"><code><b>Map</b> (Func&lt;Type,bool&gt; matches, Func&lt;ParameterExpression,string&gt; parameter, Func&lt;Expression,ParameterExpression,string&gt; parameterAccess) </code></td>
+  </tr>
+</table></td>
+  </tr>
+</table><p></p>
+<table class="tmain" width="100%">
+  <tr>
+    <td colspan="2" class="thdr"><b>Parameters</b></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>matches</code></td>
+    <td class="tmain" width="69%"><p>Tells whether a rule parameter of the given type should bind.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>parameter</code></td>
+    <td class="tmain" width="69%"><p>Renders the whole model - the bare parameter. The              gives
+its type (and name) - for example <code class="ctag">p =&gt; &quot;value&quot;</code>, or
+<code class="ctag">p =&gt; &quot;reference('&quot; + p.Type.Name + &quot;')&quot;</code>.</p></td>
+  </tr>
+  <tr>
+    <td class="tmain_nw" width="31%"><code>parameterAccess</code></td>
+    <td class="tmain" width="69%"><p>Renders a field access, given the member/index chain and the root parameter it is rooted
+in. Use <a href="Gehtsoft.ExpressionToJs.ExpressionCompiler.ParameterAccessPath.HK7.html"><code>ExpressionCompiler.ParameterAccessPath</code></a>             to turn the chain into a
+dotted path - for example
+<code class="ctag">(e, p) =&gt; &quot;value.&quot; + ExpressionCompiler.ParameterAccessPath(e)</code> turns
+<code class="ctag">m.Address.PostalCode</code> into <code class="ctag">value.Address.PostalCode</code>.</p></td>
+  </tr>
+</table><h2>Details</h2><p>Use this when the host hook is not the default <code class="ctag">reference()</code> shape - for example a
+validated value bound to an ambient <code class="ctag">value</code>, or a differently named lookup. As with</p>
+<p><a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.MapReference.lsF.html"><code>IJsParameterRegistry.MapReference</code></a>            , only the rule's own parameters are matched.</p><p>Declared in <a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html">IJsParameterRegistry</a></p>
+<p>
+  <center><a href="Gehtsoft.ExpressionToJs.IJsParameterRegistry.html">back</a></center>
+</p><script language="javascript" type="text/javascript">syncList1('Gehtsoft.ExpressionToJs.IJsParameterRegistry');</script></body></html>

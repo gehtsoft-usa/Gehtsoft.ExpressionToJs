@@ -1,0 +1,7 @@
+obj/
+dst/
+src/raw/
+.git/
+Gehtsoft.EF.Db.SqlDb.xml
+Gehtsoft.EF.Entities.xml
+Gehtsoft.EF.FTS.xml

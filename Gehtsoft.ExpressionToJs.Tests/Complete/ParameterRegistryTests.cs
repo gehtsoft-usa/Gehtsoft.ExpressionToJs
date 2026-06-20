@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Jint;
 using Xunit;
 
 namespace Gehtsoft.ExpressionToJs.Tests.Complete
@@ -153,6 +154,56 @@ namespace Gehtsoft.ExpressionToJs.Tests.Complete
             Assert.Equal(
                 "((jsv_account_strong(reference())) && (jsv_equal(reference('Password'), reference('Confirm'))))",
                 compiler.JavaScriptExpression);
+        }
+
+        [Fact]
+        public void Map_DecomposesArrayIndexOnMember()
+        {
+            // m.Items[0] -> jsv_index(value.Items, 0): the Map binding renders only the array
+            // member chain; the library decomposes the index node itself (parity with MapReference).
+            Expression<Func<Account, bool>> rule = m => m.Items[0] == 5;
+            var compiler = new ExpressionCompiler(rule);
+            compiler.Parameters.Map(_ => true, p => "value", (e, p) => "value." + ExpressionCompiler.ParameterAccessPath(e));
+            Assert.Equal("jsv_equal(jsv_index(value.Items, 0), 5)", compiler.JavaScriptExpression);
+        }
+
+        [Fact]
+        public void Map_DecomposesArrayIndexOnBareParameter()
+        {
+            // the validator's value-rule shape: the array IS the bound root parameter, so it must
+            // render through the `parameter` func (`value`), not the empty-path access (`value.`).
+            Expression<Func<int[], bool>> rule = v => v.All(c => c >= v[0]);
+            var compiler = new ExpressionCompiler(rule);
+            compiler.Parameters.Map(_ => true, p => "value", (e, p) => "value." + ExpressionCompiler.ParameterAccessPath(e));
+            Assert.Equal("jsv_all(value, function (c) { return (jsv_greaterorequal(c, jsv_index(value, 0)));})", compiler.JavaScriptExpression);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 3, 4, 5 }, true)]   // every element >= first
+        [InlineData(new int[] { 5, 4, 6 }, false)]  // 4 < first (5)
+        [InlineData(new int[] { 7 }, true)]
+        public void Map_DecomposedArrayIndex_EvaluatesInJs(int[] data, bool expected)
+        {
+            // not only must the JS string be right - it must execute in Jint with `value` bound to a
+            // real array and agree with the compiled C# delegate (the differential contract for Map).
+            Expression<Func<int[], bool>> rule = v => v.All(c => c >= v[0]);
+            var compiler = new ExpressionCompiler(rule);
+            compiler.Parameters.Map(_ => true, p => "value", (e, p) => "value." + ExpressionCompiler.ParameterAccessPath(e));
+            string js = compiler.JavaScriptExpression;
+
+            // (1) C# delegate
+            bool csharp = rule.Compile()(data);
+            Assert.Equal(expected, csharp);
+
+            // (2) emitted JS in Jint, with the value root bound to the array
+            var engine = new Engine();
+            engine.Execute(ExpressionToJsStubAccessor.GetJsIncludesAsString());
+            engine.SetValue("value", data);
+            bool jsResult = Convert.ToBoolean(engine.Evaluate(js).ToObject());
+            Assert.Equal(expected, jsResult);
+
+            // (3) C# and JS agree directly
+            Assert.Equal(csharp, jsResult);
         }
 
         [Fact]

@@ -637,16 +637,11 @@ namespace Gehtsoft.ExpressionToJs
 
         protected virtual string AddParameterAccess(Expression expression)
         {
-            ParameterExpression root = GetRootParameter(expression);
-            if (root != null && IsRootParameter(root) && TryGetParameterBinding(root.Type, out ParameterBinding binding))
-                return binding.Access != null ? binding.Access(expression, root) : DefaultReferenceParameterAccess(expression);
-
-            if (expression.NodeType == ExpressionType.MemberAccess)
-            {
-                MemberExpression memberExpression = (MemberExpression)expression;
-                return $"{AddParameterAccess(memberExpression.Expression)}.{memberExpression.Member.Name}";
-            }
-            else if (expression.NodeType == ExpressionType.ArrayIndex)
+            // Index nodes are decomposed up front into jsv_index(<array access>, <index>): the array
+            // sub-expression recurses through this method (so a custom Map binding only ever has to
+            // render member chains, never the index), and the index walks normally. This keeps Map in
+            // step with MapReference, whose DefaultReferenceParameterAccess already decomposes indexing.
+            if (expression.NodeType == ExpressionType.ArrayIndex)
             {
                 BinaryExpression binaryExpression = (BinaryExpression)expression;
                 return $"jsv_index({AddParameterAccess(binaryExpression.Left)}, {WalkExpression(binaryExpression.Right)})";
@@ -657,8 +652,21 @@ namespace Gehtsoft.ExpressionToJs
                 if (callExpression.Method.Name == "get_Item" && callExpression.Arguments.Count == 1)
                     return $"jsv_index({AddParameterAccess(callExpression.Object)}, {WalkExpression(callExpression.Arguments[0])})";
             }
-            else if (expression.NodeType == ExpressionType.Parameter)
-                return ((ParameterExpression)expression).Name;
+
+            // The bare parameter is "the model", not an access on it: render it through the parameter
+            // func (AddParameter) so a Map binding emits e.g. `value`, not the empty-path `value.`.
+            if (expression.NodeType == ExpressionType.Parameter)
+                return AddParameter((ParameterExpression)expression);
+
+            ParameterExpression root = GetRootParameter(expression);
+            if (root != null && IsRootParameter(root) && TryGetParameterBinding(root.Type, out ParameterBinding binding))
+                return binding.Access != null ? binding.Access(expression, root) : DefaultReferenceParameterAccess(expression);
+
+            if (expression.NodeType == ExpressionType.MemberAccess)
+            {
+                MemberExpression memberExpression = (MemberExpression)expression;
+                return $"{AddParameterAccess(memberExpression.Expression)}.{memberExpression.Member.Name}";
+            }
 
             throw new InvalidOperationException($"Unexpected expression for the parameter access {expression.NodeType}");
         }

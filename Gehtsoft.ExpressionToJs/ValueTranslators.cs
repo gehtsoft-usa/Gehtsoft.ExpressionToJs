@@ -137,11 +137,14 @@ namespace Gehtsoft.ExpressionToJs
         /// [c]p => "reference('" + p.Type.Name + "')"[/c].
         /// </param>
         /// <param name="parameterAccess">
-        /// Renders a field access, given the member/index chain and the root parameter it is rooted
-        /// in. Use <see cref="ExpressionCompiler.ParameterAccessPath"/> to turn the chain into a
-        /// dotted path - for example
-        /// [c](e, p) => "value." + ExpressionCompiler.ParameterAccessPath(e)[/c] turns
-        /// [c]m.Address.PostalCode[/c] into [c]value.Address.PostalCode[/c].
+        /// Renders a field access, given the member chain and the root parameter it is rooted in. Use
+        /// <see cref="ExpressionCompiler.ParameterAccessPath"/> to turn the chain into a dotted path -
+        /// for example [c](e, p) => "value." + ExpressionCompiler.ParameterAccessPath(e)[/c] turns
+        /// [c]m.Address.PostalCode[/c] into [c]value.Address.PostalCode[/c]. Array/indexer access is
+        /// decomposed by the library into [c]jsv_index(&lt;array access&gt;, &lt;index&gt;)[/c] before
+        /// this callback runs, so it only ever receives a member chain (or the bare parameter) - the
+        /// index sub-expression is emitted for you. [c]m.Items[0][/c] therefore becomes
+        /// [c]jsv_index(value.Items, 0)[/c].
         /// </param>
         /// <returns>This registry, for fluent chaining.</returns>
         IJsParameterRegistry Map(Func<Type, bool> matches, Func<ParameterExpression, string> parameter, Func<Expression, ParameterExpression, string> parameterAccess);
